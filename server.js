@@ -8,6 +8,12 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 10000;
 
+// Add this logging middleware
+app.use((req, res, next) => {
+    console.log(`Received ${req.method} request for ${req.url}`);
+    next();
+});
+
 // Existing /post endpoint (unchanged)
 app.post('/', (req, res) => {
     console.log('Received POST request:', req.body);
@@ -99,6 +105,12 @@ app.post('/split', (req, res) => {
             res.status(500).send('Error during split process');
         }
     });
+});
+
+// Add a catch-all route for debugging
+app.use((req, res) => {
+    console.log(`404 - Not Found: ${req.method} ${req.url}`);
+    res.status(404).send('Not Found');
 });
 
 app.listen(PORT, () => {
