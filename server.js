@@ -8,6 +8,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 10000;
 
+// Existing /post endpoint (unchanged)
 app.post('/', (req, res) => {
     console.log('Received POST request:', req.body);
     const { names, domain, niche, webhook } = req.body;
@@ -58,6 +59,39 @@ app.post('/', (req, res) => {
         } else {
             console.error('Error during scraping process:', pythonOutput);
             res.status(500).send('Error during scraping process');
+        }
+    });
+});
+
+// New /split endpoint
+app.post('/split', (req, res) => {
+    console.log('Received /split request:', req.body);
+    const { names, domain, niche, webhook } = req.body;
+
+    const pythonProcess = spawn('python3', ['split_processor.py']);
+
+    pythonProcess.stdin.write(JSON.stringify(req.body));
+    pythonProcess.stdin.end();
+
+    let pythonOutput = '';
+
+    pythonProcess.stdout.on('data', (data) => {
+        console.log(`Python stdout: ${data}`);
+        pythonOutput += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+        console.error(`Python Error: ${data}`);
+    });
+
+    pythonProcess.on('close', (code) => {
+        console.log(`Python script exited with code ${code}`);
+        
+        if (code === 0) {
+            res.status(200).json(JSON.parse(pythonOutput));
+        } else {
+            console.error('Error during split process:', pythonOutput);
+            res.status(500).send('Error during split process');
         }
     });
 });

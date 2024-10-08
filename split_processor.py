@@ -1,8 +1,6 @@
 import json
-from flask import Flask, request, jsonify
+import sys
 import requests
-
-app = Flask(__name__)
 
 run_counter = 0
 
@@ -13,14 +11,14 @@ def format_text(text, words_per_line=7):
     words = text.split(', ')
     return '\n'.join(', '.join(words[i:i+words_per_line]) for i in range(0, len(words), words_per_line))
 
-@app.route('/split', methods=['POST'])
-def split_and_process():
+def split_and_process(data):
     global run_counter
     run_counter += 1
     
     try:
-        data = request.json
         names = data['names']
+        domain = data['domain']
+        niche = data['niche']
         webhook_url = data['webhook']
         
         name_list = names.split(', ')
@@ -30,20 +28,24 @@ def split_and_process():
             formatted_names = format_text(', '.join(group))
             payload = {
                 "names": formatted_names,
+                "domain": domain,
+                "niche": niche,
                 "run_id": str(run_counter)
             }
             
             response = requests.post(webhook_url, json=payload)
             response.raise_for_status()
         
-        return jsonify({"message": "Processing complete", "run_id": run_counter}), 200
+        return {"message": "Processing complete", "run_id": run_counter}
     
     except KeyError as e:
-        return jsonify({"error": f"Missing required field: {str(e)}"}), 400
+        return {"error": f"Missing required field: {str(e)}"}
     except requests.RequestException as e:
-        return jsonify({"error": f"Error sending to webhook: {str(e)}"}), 500
+        return {"error": f"Error sending to webhook: {str(e)}"}
     except Exception as e:
-        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+        return {"error": f"Unexpected error: {str(e)}"}
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    input_data = json.loads(sys.stdin.read())
+    result = split_and_process(input_data)
+    print(json.dumps(result))
