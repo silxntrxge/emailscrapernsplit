@@ -113,6 +113,9 @@ app.use((req, res) => {
     res.status(404).send('Not Found');
 });
 
+// Add this line just before app.listen()
+console.log('Routes:', app._router.stack.filter(r => r.route).map(r => r.route.path));
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

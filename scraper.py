@@ -304,13 +304,18 @@ def split_and_process(data):
     except Exception as e:
         return {"error": f"Unexpected error: {str(e)}"}
 
-# Modify the main block to handle both scraping and splitting
-if __name__ == '__main__':
+def split(data):
+    # Your splitting logic here
+    # For now, let's just echo back the input data
+    return data
+
+if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == 'split':
+        # Handle split request
         input_data = json.loads(sys.stdin.read())
-        result = split_and_process(input_data)
+        result = split(input_data)
         print(json.dumps(result))
     else:
-        # Original scraping logic
+        # Handle scrape request
         logger.info("Starting the Flask application")
         app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
