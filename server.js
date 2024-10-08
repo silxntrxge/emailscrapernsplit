@@ -63,12 +63,11 @@ app.post('/', (req, res) => {
     });
 });
 
-// New /split endpoint
+// Modified /split endpoint
 app.post('/split', (req, res) => {
     console.log('Received /split request:', req.body);
-    const { names, domain, niche, webhook } = req.body;
 
-    const pythonProcess = spawn('python3', ['split_processor.py']);
+    const pythonProcess = spawn('python3', ['scraper.py', 'split']);
 
     pythonProcess.stdin.write(JSON.stringify(req.body));
     pythonProcess.stdin.end();
@@ -88,7 +87,13 @@ app.post('/split', (req, res) => {
         console.log(`Python script exited with code ${code}`);
         
         if (code === 0) {
-            res.status(200).json(JSON.parse(pythonOutput));
+            try {
+                const result = JSON.parse(pythonOutput);
+                res.status(200).json(result);
+            } catch (error) {
+                console.error('Error parsing Python output:', error);
+                res.status(500).send('Error processing split request');
+            }
         } else {
             console.error('Error during split process:', pythonOutput);
             res.status(500).send('Error during split process');

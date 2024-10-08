@@ -260,6 +260,57 @@ def scrape():
     logger.info(f"Scraping started for record ID: {record_id}")
     return jsonify({'message': 'Scraping started, will be sent to:', 'recordId': record_id}), 200
 
+# Add the following functions from split_processor.py
+def split_names(names, group_size=7):
+    return [names[i:i+group_size] for i in range(0, len(names), group_size)]
+
+def format_text(text, words_per_line=7):
+    words = text.split(', ')
+    return '\n'.join(', '.join(words[i:i+words_per_line]) for i in range(0, len(words), words_per_line))
+
+run_counter = 0
+
+def split_and_process(data):
+    global run_counter
+    run_counter += 1
+    
+    try:
+        names = data['names']
+        domain = data['domain']
+        niche = data['niche']
+        webhook_url = data['webhook']
+        
+        name_list = names.split(', ')
+        name_groups = split_names(name_list)
+        
+        for group in name_groups:
+            formatted_names = format_text(', '.join(group))
+            payload = {
+                "names": formatted_names,
+                "domain": domain,
+                "niche": niche,
+                "run_id": str(run_counter)
+            }
+            
+            response = requests.post(webhook_url, json=payload)
+            response.raise_for_status()
+        
+        return {"message": "Processing complete", "run_id": run_counter}
+    
+    except KeyError as e:
+        return {"error": f"Missing required field: {str(e)}"}
+    except requests.RequestException as e:
+        return {"error": f"Error sending to webhook: {str(e)}"}
+    except Exception as e:
+        return {"error": f"Unexpected error: {str(e)}"}
+
+# Modify the main block to handle both scraping and splitting
 if __name__ == '__main__':
-    logger.info("Starting the Flask application")
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    if len(sys.argv) > 1 and sys.argv[1] == 'split':
+        input_data = json.loads(sys.stdin.read())
+        result = split_and_process(input_data)
+        print(json.dumps(result))
+    else:
+        # Original scraping logic
+        logger.info("Starting the Flask application")
+        app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
