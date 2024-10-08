@@ -309,13 +309,21 @@ def split(data):
     # For now, let's just echo back the input data
     return data
 
+@app.route('/split', methods=['POST'])
+@require_api_key
+def split_route():
+    logger.info("Received split request")
+    data = request.json
+    result = split_and_process(data)
+    return jsonify(result), 200
+
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == 'split':
-        # Handle split request
+        # Handle split request from command line
         input_data = json.loads(sys.stdin.read())
-        result = split(input_data)
+        result = split_and_process(input_data)
         print(json.dumps(result))
     else:
-        # Handle scrape request
+        # Handle scrape request or run as a web server
         logger.info("Starting the Flask application")
         app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
