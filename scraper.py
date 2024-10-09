@@ -116,13 +116,14 @@ def initialize_driver():
         logger.error(f"Error initializing WebDriver: {e}")
         sys.exit(1)
 
-def generate_urls(names, domain, niches, num_pages=5):
+def generate_urls(names, domain, niches, num_pages=2):
     logger.info("Generating URLs...")
     urls = []
     for name in names:
         for niche in niches:
-            for page in range(1, num_pages + 1):
-                url = f"https://www.google.com/search?q=%22{name}%22+%22{domain}%22+%22{niche}%22&start={page}"
+            for page in range(0, num_pages):
+                start = page * 100
+                url = f"https://www.google.com/search?q=%22{name}%22+%22{domain}%22+%22{niche}%22&num=100&start={start}"
                 urls.append(url)
     logger.info(f"Generated {len(urls)} URLs.")
     return urls
