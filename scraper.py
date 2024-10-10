@@ -262,6 +262,7 @@ def split_and_process(data):
         domain = data['domain']
         niche = data['niche']
         webhook_url = data['webhook']
+        custom1 = data.get('custom1', '')  # Optional custom variable
         
         name_list = names.split(', ')
         name_groups = split_names(name_list)
@@ -275,10 +276,23 @@ def split_and_process(data):
                 "run_id": str(run_counter)
             }
             
+            # Include custom1 in the payload only if it's provided
+            if custom1:
+                payload["custom1"] = custom1
+            
             response = requests.post(webhook_url, json=payload)
             response.raise_for_status()
         
-        return {"message": "Processing complete", "run_id": run_counter}
+        result = {
+            "message": "Processing complete",
+            "run_id": run_counter
+        }
+        
+        # Include custom1 in the result only if it's provided
+        if custom1:
+            result["custom1"] = custom1
+        
+        return result
     
     except KeyError as e:
         return {"error": f"Missing required field: {str(e)}"}
