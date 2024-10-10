@@ -244,10 +244,10 @@ def scrape():
     return jsonify({'message': 'Scraping started, will be sent to:', 'recordId': record_id}), 200
 
 # Add the following functions from split_processor.py
-def split_names(names, group_size=17):
+def split_names(names, group_size=6):
     return [', '.join(names[i:i+group_size]) for i in range(0, len(names), group_size)]
 
-def format_text(text, words_per_line=17):
+def format_text(text, words_per_line=6):
     words = text.split(', ')
     return ', '.join(words[:words_per_line])
 
