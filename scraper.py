@@ -263,11 +263,11 @@ def scrape():
 
 # Add the following functions from split_processor.py
 def split_names(names, group_size=17):
-    return [names[i:i+group_size] for i in range(0, len(names), group_size)]
+    return [', '.join(names[i:i+group_size]) for i in range(0, len(names), group_size)]
 
-def format_text(text, words_per_line=7):
+def format_text(text, words_per_line=17):
     words = text.split(', ')
-    return '\n'.join(', '.join(words[i:i+words_per_line]) for i in range(0, len(words), words_per_line))
+    return ', '.join(words[:words_per_line])
 
 run_counter = 0
 
@@ -285,7 +285,7 @@ def split_and_process(data):
         name_groups = split_names(name_list)
         
         for group in name_groups:
-            formatted_names = format_text(', '.join(group))
+            formatted_names = format_text(group)
             payload = {
                 "names": formatted_names,
                 "domain": domain,
